@@ -12,6 +12,7 @@ import { Link } from "react-router-dom";
 import axios from "axios"
 import AliceCarousel from 'react-alice-carousel';
 import 'react-alice-carousel/lib/alice-carousel.css';
+import FormItem from 'antd/es/form/FormItem';
 
 
 
@@ -37,7 +38,7 @@ const AddProduct = () => {
   const[a, setA] = useState(null);
 
   //for upload img
-  const [selectedFile,  setSelectedFile] = useState(null);
+  const [selectedFile,  setSelectedFile] = useState( null);
 
   const state = {
     file:null,
@@ -91,50 +92,56 @@ const AddProduct = () => {
 
   //for uploading files. need tested
   //try to boofered images and use form data and multipe header in post
-  const fileChangedHandler = (event) => {
+  const fileChangedHandler = async (event) => {
     setSelectedFile(event.target.files[0])
-    console.log(event.target.files[0], "aaa")    
+    console.log(event.target.files[0], "aaa")  
+    
+    const dataFile= new FormData()
+    dataFile.append('files',  event.target.files[0])
+    //--------------------------------------------------
+      // axios
+      // .post(`http://localhost:1337/upload`, dataFile, {
+      //   headers: { 'Content-Type': 'multipart/form-data' },
+      // })
+      // .then(res => {
+      //   console.log(res);
+      // })
+      // .catch(err => {
+      //   console.log(err);
+      // });
+    //--------------------------------------------------
+
   }
   
   const uploadHandler = async (e) => {
     const dataFile= new FormData()
     dataFile.append('files', selectedFile)
 
-    const upload_res = await axios ({
-      method: 'POST',
-      url: `${API}uploads`,
-      dataFile
-    })
-    console.log(upload_res)
+    console.log(dataFile, "datafile")
+    console.log(selectedFile, "file")
 
   }
 
   const postDataUpload = async (data) => {
-    //console.log(data)
-   // console.log(prods)
+    console.log(data, "data for post")
+    const dataFile= new FormData();
+    dataFile.append('files.img',  selectedFile);
+    dataFile.append('data', JSON.stringify(data));
 
-        try {
-          const response = await fetch(`${API}posts`, { //user.id
-            method: "POST",
-            headers: {
-             // "Content-Type": "multipart/form-data",
-              "Content-Type": "application/json",
-             Authorization: `Bearer ${getToken()}`,
-            },
-            //body: new FormData(selectedFile),
-            body: JSON.stringify(data),
-          });
-
-      const responseData = await response.json();
-      console.log(responseData, )
-     // setUser(responseData);
-      message.success("Data saved successfully!");
-    } catch (error) {
-      console.error(error);
-      message.error("Error While Updating the Profile!");
-    } finally {
-    //  setLoading(false);
-    }
+      axios
+      .post(`http://localhost:1337/posts`, dataFile, {
+        headers: { 'Content-Type': 'multipart/form-data' ,
+        Authorization: `Bearer ${getToken()}`,
+      
+      },
+      })
+      .then(res => {
+        console.log(res);
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  
   };
 
     return (
@@ -198,22 +205,11 @@ const AddProduct = () => {
                       {categories?.map((item)=>
                       {
                       return ( 
+
                         <Select.Option key={item?.id} value={item?.id} > {item?.title}</Select.Option>
                           )
                       })}
                   </Select>
-                    {//рабочая версия, наладить дизайн.
-                  // onClick={handleSelectCatChange}
-                    /* <div className="select">
-                      <select placeholder="Category" onClick={handleSelectCatChange}>
-                      { 
-                        categories?.map((item)=>{
-                        if (item?.id)
-                        return <option value={"item?.title"+item.id}>{item?.title} </option>               
-                        })
-                      }
-                    </select>
-                  </div> */}
                   </Form.Item>
                 </Col>
                 <Col span={24}>
@@ -224,7 +220,7 @@ const AddProduct = () => {
                       {
                         required: true,
                         type: "string",
-                        max: 120,
+                        max: 1000,
                       },
                     ]}
                   >
@@ -256,10 +252,14 @@ const AddProduct = () => {
                     ]}
                   >
                   </Form.Item>
+                  
+                  <Form.Item  label= "Upload a photo">
+                    <Input type="file" placeholder="img" onChange={fileChangedHandler} />
+                  </Form.Item>
                 </Col>
               </Row>
               <Form.Item
-                    label="Products"
+                    label="Select the products"
                     name="products"
                   >
                     <Checkbox.Group>
@@ -330,9 +330,9 @@ const AddProduct = () => {
                     </div>
                     
                   </div>
-
+{/* 
                   <Input type="file" placeholder="img" onChange={fileChangedHandler} />
-                  <Button onClick={uploadHandler}>Upload!</Button>
+                  <Button onClick={uploadHandler}>Upload!</Button> */}
         </div>
 
 
